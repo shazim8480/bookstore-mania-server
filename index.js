@@ -79,7 +79,7 @@ const run = async () => {
     });
 
     // delete book
-    app.delete("/book/:id", async (req, res) => {
+    app.delete("/delete-book/:id", async (req, res) => {
       const id = req.params.id;
 
       const result = await booksCollection.deleteOne({ _id: ObjectId(id) });
