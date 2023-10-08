@@ -25,10 +25,15 @@ const run = async () => {
 
     // get all books
     app.get("/books", async (req, res) => {
-      const cursor = booksCollection.find({});
-      const book = await cursor.toArray();
+      try {
+        const cursor = booksCollection.find({});
+        const books = await cursor.toArray();
 
-      res.send({ status: true, data: book });
+        res.json({ status: true, data: books });
+      } catch (error) {
+        console.error("Error fetching books:", error.message);
+        res.status(500).json({ status: false, error: "Failed to fetch books" });
+      }
     });
 
     // add a book
@@ -47,6 +52,30 @@ const run = async () => {
       const result = await booksCollection.findOne({ _id: ObjectId(id) });
       console.log(result);
       res.send(result);
+    });
+
+    // update book by id //
+    app.put("/update-book/:id", async (req, res) => {
+      const bookId = req.params.id;
+      const updatedBookData = req.body;
+
+      try {
+        const result = await booksCollection.updateOne(
+          { _id: ObjectId(bookId) },
+          { $set: updatedBookData }
+        );
+
+        if (result.matchedCount === 0) {
+          return res
+            .status(404)
+            .json({ status: false, error: "Book not found" });
+        }
+
+        res.json({ status: true, message: "Book updated successfully" });
+      } catch (error) {
+        console.error("Error updating book:", error.message);
+        res.status(500).json({ status: false, error: "Failed to update book" });
+      }
     });
 
     // delete book
@@ -82,6 +111,8 @@ const run = async () => {
       console.log("review added successfully");
       res.json({ message: "review added successfully" });
     });
+
+    // get reviews by specific user
 
     app.get("/review/:id", async (req, res) => {
       const bookId = req.params.id;
